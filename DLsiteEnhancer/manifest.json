@@ -1,0 +1,48 @@
+{
+    "manifest_version": 2,
+    "name": "DLsite Enhancer",
+    "version": "1.0",
+    "author": "Ratete",
+    "description": "DLsiteを色々便利にする",
+    "homepage_url": "https://github.com/RateteApple/DLsite-Enhancer",
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.dlsite.com/*/fsr/*"
+            ],
+            "js": [
+                "contentScripts/searchPage/searchPage.js"
+            ],
+            "css": [
+                "contentScripts/searchPage/searchPage.css"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "background": {
+        "scripts": [
+            "background/background.js"
+        ]
+    },
+    "permissions": [
+        "storage",
+        "webRequest",
+        "webRequestBlocking",
+        "*://*.dlsite.com/*"
+    ],
+    "icons": {
+        "16": "icon/16.png",
+        "48": "icon/48.png",
+        "128": "icon/128.png"
+    },
+    "browser_action": {
+        "default_icon": {
+            "16": "icon/16.png",
+            "48": "icon/48.png",
+            "128": "icon/128.png"
+        }
+    },
+    "options_ui": {
+        "page": "options/options.html"
+    }
+}
