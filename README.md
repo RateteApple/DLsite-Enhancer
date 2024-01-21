@@ -5,7 +5,7 @@
 1. [ここ](https://github.com/RateteApple/DLsite-Enhancer/releases/latest)からDLsite-Enhancer.zipをダウンロード
 ![image](https://github.com/RateteApple/DLsite-Enhancer/assets/105982649/5f178c85-5883-4895-a4be-987ba27a09a9)
 3. ダウンロードしたzipファイルを展開する
-4. 各ブラウザのやり方に従って拡張機能をインストールする。
+4. 各ブラウザのやり方に従って拡張機能をインストールする。やり方が分からない場合は[ここ](https://exemate.co.jp/archives/7594)を参考にしてください。
    
 # 機能
 - サークルをブロックして検索結果から非表示にする
