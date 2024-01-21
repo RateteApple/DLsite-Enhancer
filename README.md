@@ -14,5 +14,4 @@
 - 作品の下部に表示されているブロックボタンをクリックすることで、そのサークルをブロックリストに追加できます。
 ![image](https://github.com/RateteApple/DLsite-Enhancer/assets/105982649/6b85fcb5-3beb-4f14-90b4-0178aca42b1c)
 - 拡張機能をクリックして飛んだ先のオプションページから、ブロックの解除・ブロックリストのエクスポート、インポートが出来ます。
-
-
+![image](https://github.com/RateteApple/DLsite-Enhancer/assets/105982649/9ec539c1-27a0-455e-a2cb-8c51afa38383)
