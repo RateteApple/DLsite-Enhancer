@@ -1,26 +1,3 @@
-let storedData = null;
-
-// ページ読み込み時にデータを読み込む
-window.addEventListener('load', function() {
-    chrome.storage.sync.get("blockedCircles", function (result) {
-        console.log('blockedCircles loaded');
-        storedData = result.blockedCircles || [];
-        updateTable(); // テーブルを更新
-    });
-});
-
-// ストレージの変更を監視し、変更があった場合はデータを更新する
-chrome.storage.onChanged.addListener(function (changes, namespace) {
-    for (let key in changes) {
-        if (key === "blockedCircles" && namespace === "sync") {
-            console.log('blockedCircles changed');
-            storedData = changes[key].newValue || [];
-            updateTable(); // テーブルを更新
-        }
-    }
-});
-
-
 function updateTable() {
     // 挿入する場所を取得
     const ShowBlockedList = document.getElementById('BlockListTable');
@@ -152,3 +129,31 @@ document.getElementById('ImportBlockList').onclick = function() {
 
     input.click();
 };
+
+
+// = = = = = = = = = = = = = = = = = = = =
+//  main process
+// = = = = = = = = = = = = = = = = = = = =
+let storedData = null;
+(function () {
+    // ページ読み込み時にデータを読み込む
+    window.addEventListener('load', function() {
+        chrome.storage.sync.get("blockedCircles", function (result) {
+            console.log('blockedCircles loaded');
+            storedData = result.blockedCircles || [];
+            updateTable(); // テーブルを更新
+        });
+    });
+
+    // ストレージの変更を監視し、変更があった場合はデータを更新する
+    chrome.storage.onChanged.addListener(function (changes, namespace) {
+        for (let key in changes) {
+            if (key === "blockedCircles" && namespace === "sync") {
+                console.log('blockedCircles changed');
+                storedData = changes[key].newValue || [];
+                updateTable(); // テーブルを更新
+            }
+        }
+    });
+
+})();
