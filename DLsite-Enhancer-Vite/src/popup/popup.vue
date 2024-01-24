@@ -1,19 +1,14 @@
 <template>
-    <h1>this is popup</h1>
-    <button @click="openOptionPage">open option page</button>
-    <button @click="clearChromeStorage">clear chrome storage</button>
+    <h1>DLsite Enhancer</h1>
+    <button @click="openOptionPage">オプションページを開く</button>
 </template>
 
 
 <script setup lang="ts">
-import {clearBlockedCircles} from '../components/chromestorage.ts';
 
 async function openOptionPage(): Promise<void> {
     chrome.runtime.openOptionsPage();
-}
-
-async function clearChromeStorage(): Promise<void> {
-    await clearBlockedCircles();
+    window.close();
 }
 </script>
 

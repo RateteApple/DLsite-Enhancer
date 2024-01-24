@@ -23,7 +23,7 @@
     "content_scripts": [
         {
             "matches": [
-                "*://www.dlsite.com/*/fsr/*"
+                "*://www.dlsite.com/*/fsr/*", "*://www.dlsite.com/*/works/type/=/work_type_category/*", "*://www.dlsite.com/*/works/type/*"
             ],
             "js": [
                 "./src/contents/dliste_search.ts"

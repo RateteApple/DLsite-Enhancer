@@ -1,20 +1,7 @@
 export { };
 
-import { getBlockedCircles, setBlockedCircles, insertBlockedCircle, trimBlockedCircleList, isBlockedCircleId } from '../components/chromestorage';
+import { getBlockedCircles, insertBlockedCircle, trimBlockedCircleList, isBlockedCircleId } from '../components/chromestorage';
 
-// = = = = = = = = = = = = = = = = = = = =
-// wait for DOMContentLoaded
-// = = = = = = = = = = = = = = = = = = = =
-
-// wait for DOMContentLoaded
-async function waitUntilDomContentLoaded(): Promise<void> {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', main);
-    } else {
-        main();
-    }
-}
-await waitUntilDomContentLoaded();
 
 // = = = = = = = = = = = = = = = = = = = =
 // add style sheet
@@ -40,12 +27,12 @@ await waitUntilDomContentLoaded();
 // get search text & replace search button
 // = = = = = = = = = = = = = = = = = = = =
 
-async function getSearchText(): Promise<string> {
-    return new Promise((resolve) => {
-        const input = document.getElementById('search_text') as HTMLInputElement;
-        resolve(input.value);
-    });
-}
+// async function getSearchText(): Promise<string> {
+//     return new Promise((resolve) => {
+//         const input = document.getElementById('search_text') as HTMLInputElement;
+//         resolve(input.value);
+//     });
+// }
 
 
 
@@ -53,16 +40,21 @@ async function getSearchText(): Promise<string> {
 // insert block button
 // = = = = = = = = = = = = = = = = = = = =
 
-async function findWorkElms(): Promise<NodeListOf<Element>> {
-    return new Promise((resolve) => {
+async function findWorkElms(type:string): Promise<NodeListOf<Element>> {
+    if (type === 'block') {
         const work_elms = document.querySelectorAll('li.search_result_img_box_inner');
-        resolve(work_elms);
-    });
+        return work_elms;
+    } else if (type === 'column') {
+        const work_elms = document.querySelectorAll('table.n_worklist tr');
+        return work_elms;
+    } else {
+        throw new Error('type is not block or column');
+    }
 }
 
-async function insertBlockButton(): Promise<void> {
+async function insertBlockButton(showType:string): Promise<void> {
     // add button
-    const work_elms = await findWorkElms();
+    const work_elms = await findWorkElms(showType);
     work_elms.forEach(async elm => {
         // get circle info
         const circle_url: string | null = (elm.querySelector('dd.maker_name a') as HTMLAnchorElement)?.href;
@@ -81,9 +73,6 @@ async function insertBlockButton(): Promise<void> {
             throw new Error('maker name element cannot be found');
         }
         makerNameElement.insertAdjacentElement('afterend', button);
-
-        // update button
-        await BlockButton.updateButton('');
     });
 }
 
@@ -119,9 +108,6 @@ class BlockButton {
             // trim blocked circle list
             await trimBlockedCircleList(circleId);
         }
-
-        // update button
-        await this.updateButton(circleId);
     }
 
     public static async updateButton(circleId: string): Promise<void> {
@@ -161,9 +147,9 @@ class BlockButton {
 // hide blocked circle works
 // = = = = = = = = = = = = = = = = = = = =
 
-async function hideBlockedCircleWorks(): Promise<void> {
+async function hideBlockedCircleWorks(showType:string): Promise<void> {
     // get li elements
-    const work_elms = await findWorkElms();
+    const work_elms = await findWorkElms(showType);
 
     // for each li element
     work_elms.forEach(async elm => {
@@ -174,14 +160,18 @@ async function hideBlockedCircleWorks(): Promise<void> {
         const isBlocked = await isBlockedCircleId(circleId);
         if (isBlocked) {
             (elm as HTMLElement).style.display = 'none';
-            console.log('hide work : ' + circleId);
         }
+
     });
+
+    // logging
+    console.log('completed hiding blocked circle works');
 }
 
-async function showBlockedCircleWorks(): Promise<void> {
+
+async function showBlockedCircleWorks(showType:string): Promise<void> {
     // get li elements
-    const work_elms = await findWorkElms();
+    const work_elms = await findWorkElms(showType);
 
     // for each li element
     work_elms.forEach(async elm => {
@@ -192,13 +182,73 @@ async function showBlockedCircleWorks(): Promise<void> {
 
 
 // = = = = = = = = = = = = = = = = = = = =
+// watch Chrome Storage
+// = = = = = = = = = = = = = = = = = = = =
+
+chrome.storage.onChanged.addListener(updateBlockedCircles);
+
+async function updateBlockedCircles(): Promise<void> {
+    // update button
+    await BlockButton.updateButton('');
+}
+
+
+// = = = = = = = = = = = = = = = = = = = =
+// determine show type
+// = = = = = = = = = = = = = = = = = = = =
+
+async function findDisplayTypeSelectButton(): Promise<Record<string, HTMLLIElement | null>> {
+    const turnBlockButton: HTMLLIElement | null = document.querySelector('li.display_block');
+    const turnColumnButton: HTMLLIElement | null = document.querySelector('li.display_normal');
+    // ブロックボタンとカラムボタンを連想配列で返す
+    return {'block': turnBlockButton, 'column': turnColumnButton};
+}
+
+async function determineShowType(): Promise<string> {
+    const buttons = await findDisplayTypeSelectButton();
+    const block_button = buttons['block'];
+    const column_button = buttons['column'];
+    if (block_button?.classList.contains('on')) {
+        return 'block';
+    } else if (column_button?.classList.contains('on')) {
+        return 'column';
+    } else {
+        throw new Error('show type cannot be determined');
+    }
+}
+
+
+
+// = = = = = = = = = = = = = = = = = = = =
+// wait for DOMContentLoaded
+// = = = = = = = = = = = = = = = = = = = =
+
+async function waitUntilDomContentLoaded(): Promise<void> {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', main);
+    } else {
+        main();
+    }
+}
+
+// = = = = = = = = = = = = = = = = = = = =
 // main
 // = = = = = = = = = = = = = = = = = = = =
 
-async function main() {
+(async () => {
     console.log('start dlsite_search.ts');
-    console.log('BlockList : ');
-    console.log(await getBlockedCircles());
-    await insertBlockButton();
-    await hideBlockedCircleWorks();
+    await waitUntilDomContentLoaded();
+})();
+
+async function main() {
+    // get show type
+    const showType = await determineShowType();
+    console.log('showType : ' + showType);
+
+    // add block button
+    await insertBlockButton(showType);
+    await BlockButton.updateButton('');
+    
+    // hide blocked circle works
+    await hideBlockedCircleWorks(showType);
 }

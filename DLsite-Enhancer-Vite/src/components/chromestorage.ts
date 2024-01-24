@@ -29,7 +29,6 @@ export async function getBlockedCircles(): Promise<{circleId: string, circleName
 
 export async function setBlockedCircles(blockedCircles: {circleId: string, circleName: string}[]): Promise<void> {
     chrome.storage.sync.set({blockedCircles: blockedCircles}, function () {
-        console.log(blockedCircles);
     });
 }
 
