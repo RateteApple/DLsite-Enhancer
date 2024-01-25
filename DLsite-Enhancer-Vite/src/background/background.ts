@@ -20,19 +20,6 @@ async function getLatestReleaseVersion(owner: string, repo: string): Promise<str
     return data.tag_name; // return latest release version
 }
 
-// compare current version and latest version
-async function checkForUpdate(owner: string, repo: string): Promise<boolean> {
-    const currentVersion: string = getCurrentExtensionVersion();
-    const latestVersion: string = await getLatestReleaseVersion(owner, repo);
-
-    if (currentVersion !== latestVersion) {
-        console.log(`更新が利用可能です。現在のバージョン: ${currentVersion}, 最新バージョン: ${latestVersion}`)
-        return true;
-    } else {
-        console.log('最新バージョンを使用中です。');
-        return false;
-    }
-}
 
 
 // = = = = = = = = = = = = = = = = = = = =
@@ -43,8 +30,20 @@ async function checkForUpdate(owner: string, repo: string): Promise<boolean> {
     console.log('start background script');
 
     // check for update
-    const isUpdateAvailable: boolean = await checkForUpdate('yukiyuki-0', 'DLsite-Enhancer-Vite');
-    if (isUpdateAvailable) {
-        chrome.runtime.reload();
+    const currentVersion: string = 'v' + getCurrentExtensionVersion();
+    const latestVersion: string = await getLatestReleaseVersion('RateteApple', 'DLsite-Enhancer');
+    console.log(`current version: ${currentVersion}, latest version: ${latestVersion}`);
+    if (currentVersion !== latestVersion) {
+        chrome.tabs.create(
+            {url: 'https://github.com/RateteApple/DLsite-Enhancer/releases/latest'},
+            (_tab: chrome.tabs.Tab) => {
+                chrome.notifications.create('', {
+                    type: 'basic',
+                    iconUrl: 'https://github.com/RateteApple/DLsite-Enhancer/blob/v1.0.0/DLsite-Enhancer-Vite/public/icons/128.png?raw=true',
+                    title: 'DLsite Enhancer',
+                    message: '新しいバージョンがリリースされてるよ！',
+                });
+            }
+        );
     }
 })();
