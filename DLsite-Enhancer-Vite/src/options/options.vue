@@ -4,20 +4,20 @@
     <table>
         <thead>
             <tr>
-                <th>サークルID</th>
-                <th>サークル名</th>
-                <th class="delete_col">ブロック解除</th>
+                <th class="circle_id">サークルID</th>
+                <th class="circle_name">サークル名</th>
+                <th class="delete">ブロック解除</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="(item, index) in blockedCircles" :key="index">
-                <td class="circle_id_col">{{ item.circleId }}</td>
-                <td class="circle_name_col">
+                <td class="circle_id">{{ item.circleId }}</td>
+                <td class="circle_name">
                     <a :href="'https://www.dlsite.com/maniax/circle/profile/=/maker_id/' + item.circleId" target="_blank">
                         {{ item.circleName }}
                     </a>
                 </td>
-                <td class="delete_col">
+                <td class="delete">
                     <button @click="removeCircle(index)">解除</button>
                 </td>
             </tr>
@@ -39,7 +39,14 @@ export default {
         // update blockedCircles when storage changed
         async function updateBlockedCircles(): Promise<void> {
             console.log("storage changed");
-            blockedCircles.value = await getBlockedCircles();
+            const blockedCircles_ = await getBlockedCircles();
+            blockedCircles.value = blockedCircles_;
+            // update tableTitle
+            if (blockedCircles_.length == 0) {
+                tableTitle.value = "ブロックしているサークルはありません";
+            } else {
+                tableTitle.value = "ブロックしているサークル";
+            }
         }
 
         // async function
@@ -79,9 +86,9 @@ export default {
 </script>
 
 <style>
-table {
-    width: 50rem;
-    border-collapse: collapse;
+a {
+    color: #0095da;
+    text-decoration: none;
 }
 
 th {
@@ -98,11 +105,14 @@ td {
     text-align: left;
 }
 
-.circle_id_col {
+table {
+    width: 50rem;
+    border-collapse: collapse;
+}
+.circle_id {
     width: 10rem;
 }
-
-.delete_col {
+.delete {
     width: 6rem;
 
 }
