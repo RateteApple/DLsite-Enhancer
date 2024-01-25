@@ -13,10 +13,8 @@
     
     "permissions": [
         "storage",
-        "tabs",
         "notifications"
     ],
-    "host_permissions": ["http://*/*", "https://*/*"],
 
     "background": {
         "service_worker": "src/background/background.ts"
