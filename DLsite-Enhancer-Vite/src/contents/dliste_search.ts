@@ -107,6 +107,24 @@ class BlockButton {
         });
     }
 
+    public static async deleteButton(): Promise<void> {
+        // delete button
+        const buttons = Array.from(document.querySelectorAll('button.block_btn'));
+        buttons.forEach(async button => {
+            button.remove();
+        });
+    }
+
+    public static async existBlockButton(): Promise<boolean> {
+        // check if button exists
+        const buttons = Array.from(document.querySelectorAll('button.block_btn'));
+        if (buttons.length > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
 
 // = = = = = = = = = = = = = = = = = = = =
@@ -290,7 +308,7 @@ class CSSselector {
 
 const observer = new DOMChangeObserver(
     async () => {
-        await manipulateWorks();
+        await manipulateWorks(false);
         observer.disconnect();
     },
     500
@@ -298,7 +316,7 @@ const observer = new DOMChangeObserver(
 
 (async () => {
     console.log('start dlsite_search.ts');
-    await manipulateWorks();
+    await manipulateWorks(true);
     await addClickListener([
         document.querySelector(CSSselector.leftFilter) as HTMLElement,
         document.querySelector(CSSselector.sortBox) as HTMLElement,
@@ -311,7 +329,7 @@ const observer = new DOMChangeObserver(
 // manipulate works
 // = = = = = = = = = = = = = = = = = = = =
 
-async function manipulateWorks(): Promise<void> {
+async function manipulateWorks(hide: boolean): Promise<void> {
     console.log('- - - start manipulate works - - -');
 
     let showType: 'block' | 'column';
@@ -340,6 +358,10 @@ async function manipulateWorks(): Promise<void> {
     }
 
     // add block button
+    const is_BlockButton = await BlockButton.existBlockButton();
+    if (is_BlockButton) {
+        await BlockButton.deleteButton();
+    }
     await insertBlockButton(workElments);
     await BlockButton.updateButton();
 
@@ -347,7 +369,9 @@ async function manipulateWorks(): Promise<void> {
     chrome.storage.onChanged.addListener(updateBlockedCircles);
 
     // hide blocked circle works
-    await hideBlockedCircleWorks(workElments);
+    if (hide) {
+        await hideBlockedCircleWorks(workElments);
+    }
     // add reshow button
     await addReshowBlockedCirlceWorksButton(workElments);
 

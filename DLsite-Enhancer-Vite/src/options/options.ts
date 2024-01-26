@@ -72,7 +72,7 @@ createApp(App).mount('#app')
 //             storedData.splice(index, 1);
 //         }
 //     });
-//     chrome.storage.sync.set({"blockedCircles": storedData}, function() {
+//     chrome.storage.local.set({"blockedCircles": storedData}, function() {
 //         updateTable(); // テーブルを更新
 //     });
 // }
@@ -81,7 +81,7 @@ createApp(App).mount('#app')
 // document.getElementById('ClearBlockList').onclick = function() {
 //     console.log('clear blockedCircles');
 //     storedData = [];
-//     chrome.storage.sync.set({"blockedCircles": storedData}, function() {
+//     chrome.storage.local.set({"blockedCircles": storedData}, function() {
 //         updateTable(); // テーブルを更新
 //     });
 // };
@@ -127,7 +127,7 @@ createApp(App).mount('#app')
 //             const json = reader.result;
 //             const data = JSON.parse(json);
 //             storedData = data;
-//             chrome.storage.sync.set({"blockedCircles": storedData}, function() {
+//             chrome.storage.local.set({"blockedCircles": storedData}, function() {
 //                 updateTable(); // テーブルを更新
 //             });
 //         };
@@ -144,7 +144,7 @@ createApp(App).mount('#app')
 // (function () {
 //     // ページ読み込み時にデータを読み込む
 //     window.addEventListener('load', function() {
-//         chrome.storage.sync.get("blockedCircles", function (result) {
+//         chrome.storage.local.get("blockedCircles", function (result) {
 //             console.log('blockedCircles loaded');
 //             storedData = result.blockedCircles || [];
 //             updateTable(); // テーブルを更新

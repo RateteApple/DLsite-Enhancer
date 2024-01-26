@@ -5,7 +5,7 @@ export {};
 // = = = = = = = = = = = = = = = = = = = =
 
 export async function clearBlockedCircles(): Promise<void> {
-    chrome.storage.sync.clear(function () {
+    chrome.storage.local.clear(function () {
         console.log('Successfully cleared!');
     });
 }
@@ -16,7 +16,7 @@ export async function clearBlockedCircles(): Promise<void> {
 
 export async function getBlockedCircles(): Promise<{circleId: string, circleName: string}[]> {
     return new Promise((resolve) => {
-        chrome.storage.sync.get(['blockedCircles'], function (result) {
+        chrome.storage.local.get(['blockedCircles'], function (result) {
             const blockedCircles = result.blockedCircles || [];
             resolve(blockedCircles);
         });
@@ -28,7 +28,7 @@ export async function getBlockedCircles(): Promise<{circleId: string, circleName
 // = = = = = = = = = = = = = = = = = = = =
 
 export async function setBlockedCircles(blockedCircles: {circleId: string, circleName: string}[]): Promise<void> {
-    chrome.storage.sync.set({blockedCircles: blockedCircles}, function () {
+    chrome.storage.local.set({blockedCircles: blockedCircles}, function () {
     });
 }
 
