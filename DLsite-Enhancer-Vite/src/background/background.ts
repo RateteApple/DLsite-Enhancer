@@ -20,30 +20,54 @@ async function getLatestReleaseVersion(owner: string, repo: string): Promise<str
     return data.tag_name; // return latest release version
 }
 
+// convert version string to array
+function versionStringToArray(versionStr : string): number[] {
+    return versionStr.replace('v', '').split('.').map(Number);
+}
 
+// compare version string
+function isVersionGreater(version1: string, version2: string): boolean {
+    const v1 = versionStringToArray(version1);
+    const v2 = versionStringToArray(version2);
+
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+        const num1 = v1[i] || 0;
+        const num2 = v2[i] || 0;
+
+        if (num1 > num2) return true;
+        if (num1 < num2) return false;
+    }
+    return false; // Versions are equal
+}
 
 // = = = = = = = = = = = = = = = = = = = =
 // main
 // = = = = = = = = = = = = = = = = = = = =
 (async () => {
-    // notice that background script is started
     console.log('start background script');
 
-    // check for update
-    const currentVersion: string = 'v' + getCurrentExtensionVersion();
-    const latestVersion: string = await getLatestReleaseVersion('RateteApple', 'DLsite-Enhancer');
+    const currentVersion = 'v' + getCurrentExtensionVersion();
+    const latestVersion = await getLatestReleaseVersion('RateteApple', 'DLsite-Enhancer');
     console.log(`current version: ${currentVersion}, latest version: ${latestVersion}`);
-    if (currentVersion !== latestVersion) {
-        chrome.tabs.create(
-            {url: 'https://github.com/RateteApple/DLsite-Enhancer/releases/latest'},
-            (_tab: chrome.tabs.Tab) => {
-                chrome.notifications.create('', {
-                    type: 'basic',
-                    iconUrl: 'https://github.com/RateteApple/DLsite-Enhancer/blob/v1.0.0/DLsite-Enhancer-Vite/public/icons/128.png?raw=true',
-                    title: 'DLsite Enhancer',
-                    message: '新しいバージョンがリリースされてるよ！',
-                });
+
+    if (isVersionGreater(latestVersion, currentVersion)) {
+        // logging
+        console.log('new version released!');
+
+        chrome.notifications.create('12345', {
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('icons/128.png'),
+            title: 'DLsite Enhancer',
+            message: '新しいバージョンがリリースされたよ！ここをクリックしてアップデートしてね！',
+        });
+        chrome.notifications.onClicked.addListener((notificationId) => {
+            if (notificationId === '12345') {
+                // open latest release page
+                chrome.tabs.create({ url: 'https://github.com/RateteApple/DLsite-Enhancer/releases/latest' });
             }
-        );
+        });
+        
+    } else {
+        console.log('useing latest version');
     }
 })();
