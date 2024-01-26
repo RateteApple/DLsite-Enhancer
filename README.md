@@ -14,18 +14,18 @@ DLsite を色々便利にする拡張機能です。
 
 3.拡張機能をインストールする。
 
-![image](README_assets\install.png)
+![image](.\README_assets\install.png)
 
 ## 使い方
 
 - 作品の下部に表示されているブロックボタンをクリックすることで、そのサークルをブロックリストに追加
 
-![image](README_assets\block_animation.gif)
+![image](.\README_assets\block_animation.gif)
 
 - 右上にある拡張機能のアイコンからオプションページに移動
 
-![image](README_assets\popup_animation.gif)
+![image](.\README_assets\popup_animation.gif)
 
 - オプションページでブロックリストのエクスポート、インポート、初期化
 
-![image](README_assets\options_page.png)
+![image](.\README_assets\options_page.png)
