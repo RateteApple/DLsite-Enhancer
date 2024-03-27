@@ -1,379 +1,275 @@
-export { };
-
+// = = = = = Import = = = = =
+import './style.css';
 import { insertBlockedCircle, trimBlockedCircleList, isBlockedCircleId } from '../components/chromestorage';
+import words from '../components/words.json';
 
+// = = = = = Page = = = = =
+class Page {
+    public static getWorkElements(): NodeListOf<Element> {
+        let workElements: NodeListOf<Element>;
 
-// = = = = = = = = = = = = = = = = = = = =
-// insert block button
-// = = = = = = = = = = = = = = = = = = = =
-
-async function insertBlockButton(workElments: NodeListOf<HTMLElement>): Promise<void> {
-    // add button
-    workElments.forEach(async elm => {
-        // get circle info
-        const circle_url: string | null = (elm.querySelector('dd.maker_name a') as HTMLAnchorElement)?.href;
-        const circleName: string | null = (elm.querySelector('dd.maker_name a') as HTMLAnchorElement)?.textContent;
-        const circleId: string | null = (circle_url?.split('/').slice(-1)[0] as string).replace('.html', '');
-        if (circleId === null || circleName === null) {
-            throw new Error('circleId or circleName cannot be found');
-        }
-
-        // create button
-        const button: HTMLButtonElement = await BlockButton.createButton(circleId, circleName);
-
-        // insert button
-        const makerNameElement: HTMLElement | null = elm.querySelector('dd.maker_name');
-        if (makerNameElement === null) {
-            throw new Error('maker name element cannot be found');
-        }
-        makerNameElement.insertAdjacentElement('afterend', button);
-    });
-
-    // logging
-    console.log('completed inserting block button to ' + workElments.length + ' works');
-}
-
-class BlockButton {
-    public static async createButton(circleId: string, circleName: string): Promise<HTMLButtonElement> {
-        // create button
-        const button: HTMLButtonElement = document.createElement('button');
-        // set text
-        button.textContent = '???'
-        // set id
-        button.id = circleId;
-        // add class
-        button.classList.add('block_btn');
-        button.classList.add('status_blocked');
-        // setting style
-        button.style.fontWeight = 'bold';
-        button.style.borderBottom = '5px solid #9f000c';
-        button.style.borderRadius = '100vh';
-        // add click event
-        button.addEventListener('click', async () => {
-            await this.blockEvent(button, button.id, circleName);
-        });
-        // return button
-        return button;
-    }
-
-    public static async blockEvent(button: HTMLButtonElement, circleId: string, circleName: string): Promise<void> {
-        // insert or remove circle info
-        if (button.classList.contains('status_blocked')) {
-            // insert to blocked circle list
-            await insertBlockedCircle(circleId, circleName);
+        // Get show type
+        const showType = this.getShowType();
+        // Get work elements
+        if (showType === 'block') {
+            workElements = document.querySelectorAll('.n_worklist > li');
+        } else if (showType === 'column') {
+            workElements = document.querySelectorAll('.n_worklist > tbody > tr');
         } else {
-            // trim blocked circle list
-            await trimBlockedCircleList(circleId);
-        }
-    }
-
-    public static async updateButton(circleId: string | null = null): Promise<void> {
-        let buttons: HTMLButtonElement[];
-
-        // get button from circleId
-        if (circleId === null) {
-            // get button from circleId
-            buttons = Array.from(document.querySelectorAll('button.block_btn'));
-        } else if (typeof circleId === 'string') {
-            // get button from circleId
-            buttons = Array.from(document.querySelectorAll('button.block_btn#' + circleId));
-        }
-        else {
-            throw new Error('circleId is not string or null');
+            throw new Error('Unknown show type');
         }
 
-        // throw error if button is not found
-        if (buttons.length === 0) {
-            throw new Error('button is not found');
-        }
-
-        // update button
-        buttons.forEach(async button => {
-            const isBlocked = await isBlockedCircleId(button.id);
-            // update button
-            if (isBlocked) {
-                // update button
-                button.textContent = 'Unblock!';
-                button.classList.remove('status_blocked');
-                button.classList.add('status_unblocked');
-                button.style.borderBottom = '5px solid #00a000';
-            } else {
-                // update button
-                button.textContent = 'Block!';
-                button.classList.remove('status_unblocked');
-                button.classList.add('status_blocked');
-                button.style.borderBottom = '5px solid #9f000c';
-            }
-        });
-    }
-
-    public static async deleteButton(): Promise<void> {
-        // delete button
-        const buttons = Array.from(document.querySelectorAll('button.block_btn'));
-        buttons.forEach(async button => {
-            button.remove();
-        });
-    }
-
-    public static async existBlockButton(): Promise<boolean> {
-        // check if button exists
-        const buttons = Array.from(document.querySelectorAll('button.block_btn'));
-        if (buttons.length > 0) {
-            return true;
+        // return workElements
+        if (workElements) {
+            return workElements;
         } else {
-            return false;
+            throw new Error('Cannot get work elements');
         }
     }
 
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// hide blocked circle works
-// = = = = = = = = = = = = = = = = = = = =
-
-async function hideBlockedCircleWorks(workElments: NodeListOf<HTMLElement>): Promise<void> {
-    // for each li element
-    workElments.forEach(async elm => {
-        // get circle id
-        const circle_url: string | null = (elm.querySelector('dd.maker_name a') as HTMLAnchorElement)?.href;
-        const circleId: string | null = (circle_url?.split('/').slice(-1)[0] as string).replace('.html', '');
-        // hide blocked circle works
-        const isBlocked = await isBlockedCircleId(circleId);
-        if (isBlocked) {
-            (elm as HTMLElement).style.display = 'none';
+    public static getShowType(): 'block' | 'column' {
+        // Get "Block" and "Column" button
+        const turnBlockButton = document.querySelector('li.display_block');
+        const turnColumnButton = document.querySelector('li.display_normal');
+        if (!turnBlockButton || !turnColumnButton) {
+            throw new Error('Cannot get show type elements. Hint: Waiting for the page to load.');
         }
 
-    });
-
-    // logging
-    console.log('completed hiding blocked circle works');
-}
-
-
-async function showBlockedCircleWorks(workElments: NodeListOf<HTMLElement>): Promise<void> {
-    // for each li element
-    workElments.forEach(async elm => {
-        // show blocked circle works
-        (elm as HTMLElement).style.display = 'block';
-    });
-}
-
-async function addReshowBlockedCirlceWorksButton(workElments: NodeListOf<HTMLElement>): Promise<void> {
-    // if already exists, remove
-    if (document.querySelector('.reshow_blocked_circle_works') !== null) {
-        document.querySelector('.reshow_blocked_circle_works')?.remove();
-    }
-    // create button
-    const reshowButton = document.createElement('a');
-    reshowButton.textContent = 'ブロック中のサークル作品を再表示する';
-    reshowButton.classList.add('reshow_blocked_circle_works');
-
-    // size 1em
-    reshowButton.style.fontSize = '0.8em';
-    //color blue
-    reshowButton.style.color = '#0000ff';
-    
-    // event
-    reshowButton.addEventListener('click', async () => {
-        await showBlockedCircleWorks(workElments);
-    });
-    const insertTarget = document.querySelector(CSSselector.reshowButtonLeft) as HTMLElement;
-    insertTarget.insertAdjacentElement('afterend', reshowButton);
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// watch Chrome Storage
-// = = = = = = = = = = = = = = = = = = = =
-
-async function updateBlockedCircles(): Promise<void> {
-    // update button
-    await BlockButton.updateButton();
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// show type (block or column)
-// = = = = = = = = = = = = = = = = = = = =
-
-async function findDisplayTypeSelectButton(): Promise<Record<string, HTMLLIElement | null>> {
-    const turnBlockButton: HTMLLIElement | null = document.querySelector('li.display_block');
-    const turnColumnButton: HTMLLIElement | null = document.querySelector('li.display_normal');
-    // ブロックボタンとカラムボタンを連想配列で返す
-    return { 'block': turnBlockButton, 'column': turnColumnButton };
-}
-
-async function determineShowType(): Promise<'block' | 'column'> {
-    const buttons = await findDisplayTypeSelectButton();
-    const block_button = buttons['block'];
-    const column_button = buttons['column'];
-    if (block_button?.classList.contains('on')) {
-        return 'block';
-    } else if (column_button?.classList.contains('on')) {
-        return 'column';
-    } else {
-        throw new Error('show type cannot be determined');
+        // Determine show type
+        if (turnBlockButton.classList.contains('on')) {
+            return 'block';
+        } else if (turnColumnButton.classList.contains('on')) {
+            return 'column';
+        } else {
+            throw new Error('Cannot determine show type');
+        }
     }
 }
 
 
-// = = = = = = = = = = = = = = = = = = = =
-//  Mutation Observer
-// = = = = = = = = = = = = = = = = = = = =
+// = = = = = Work = = = = =
+class Work {
 
-class DOMChangeObserver {
-    private observer: MutationObserver;
-    private debounceTimer: number | null;
-    private callback: () => void;
-    private is_observing: boolean = false;
+    public title: string
+    public circleName: string
+    public circleURL: string
+    public circleID: string
 
     constructor(
-        callback: () => void,
-        private debounceTime = 1000,
-        private target: Node = document.body,
-        private config = { attributes: true, childList: true, subtree: true }
+        public element: Element,
     ) {
-        this.callback = () => {
-            console.log(this.debounceTime / 1000 + 's passed after DOM changed');
-            callback();
-        };
-        this.observer = new MutationObserver(this.handleMutations.bind(this));
-        this.debounceTimer = null;
+        this.element = element;
+        this.title = this.getTitle(this.element);
+        this.circleName = this.getCircleName(this.element);
+        this.circleURL = this.getCircleURL(this.element);
+        this.circleID = this.getCircleID(this.circleURL);
     }
 
-    public observe(): void {
-        // if already observing, do nothing
-        if (this.is_observing) {
-            console.log('already observing');
-            return;
+    private getTitle(element: Element): string {
+        const title = element.querySelector('.work_name a')?.getAttribute('title') || null;
+        if (!title) {
+            throw new Error('Cannot get title. From this element: ' + element);
         }
-
-        this.is_observing = true;
-        console.log('start observing');
-        this.observer.observe(this.target, this.config);
+        return title;
     }
 
-    public disconnect(): void {
-        // if not observing, do nothing
-        if (!this.is_observing) {
-            console.log('not observing');
-            return;
+    private getCircleName(element: Element): string {
+        const makerName = element.querySelector('.maker_name > a')?.textContent || null;
+        if (!makerName) {
+            throw new Error('Cannot get maker name. From this element: ' + element);
         }
-
-        this.is_observing = false;
-        console.log('stop observing');
-        this.observer.disconnect();
-        if (this.debounceTimer) {
-            clearTimeout(this.debounceTimer);
-            this.debounceTimer = null;
-        }
+        return makerName;
     }
 
-    private handleMutations(_mutations: MutationRecord[]): void {
-        if (this.debounceTimer) {
-            clearTimeout(this.debounceTimer);
+    private getCircleURL(element: Element): string {
+        const circleURL = element.querySelector('.maker_name > a')?.getAttribute('href') || null;
+        if (!circleURL) {
+            throw new Error('Cannot get circle URL. From this element: ' + element);
         }
-
-        this.debounceTimer = setTimeout(() => {
-            this.callback();
-        }, this.debounceTime);
+        return circleURL;
     }
-}
 
-// = = = = = = = = = = = = = = = = = = = =
-//  add click listener
-// = = = = = = = = = = = = = = = = = = = =
-async function addClickListener(elemetns: Array<HTMLElement>): Promise<void> {
-    elemetns.forEach(async elm => {
-        if (elm === null) {
-            return;
-        }
-        elm.addEventListener('click', async () => {
-            observer.observe();
+    private getCircleID(circleURL: string): string {
+        const circleID = circleURL.split('/').reverse()[0].replace('.html', '');
+        return circleID;
+    }
+
+    public checkHasFlag(): boolean {
+        return this.element.classList.contains('applied');
+    }
+
+    public addFlag() {
+        this.element.classList.add('applied');
+    }
+
+    public replaceTitle(newTitle: string) {
+        const titleElement = this.element.querySelector('.work_name a')!;
+        titleElement.textContent = newTitle;
+
+        // mouseenter, show original title
+        this.element.addEventListener('mouseenter', () => {
+            titleElement.textContent = this.title;
         });
-    });
+
+        // mouseleave, show new title
+        this.element.addEventListener('mouseleave', () => {
+            titleElement.textContent = newTitle;
+        });
+    }
+
+    public addCautionMark() {
+        const cautionMark = document.createElement('span');
+        cautionMark.textContent = '⚠️';
+        cautionMark.classList.add('caution');
+        this.element.querySelector('.work_name a')!.before(cautionMark);
+    }
 }
 
 
-// = = = = = = = = = = = = = = = = = = = =
-// main
-// = = = = = = = = = = = = = = = = = = = =
+// = = = = = ReDisplayBtn = = = = =
+class ReDisplayBtn {
+    private text = 'ブロックしたサークルの作品を再表示'
 
-class CSSselector {
-    static works = {'block': 'li.search_result_img_box_inner', 'column': 'table.n_worklist tr'};
-    static notFoundWorks = '.work_not_found'
-    static leftFilter = '#left';
-    static sortBox = '.sort_box';
-    static searchTop = '.search_top';
-    static reshowButtonLeft = '.original_name';
+    public static exist(): boolean {
+        return document.querySelector('.reDisplayBtn') !== null;
+    }
+
+    add() {
+        const reDisplayBtn = document.createElement('a');
+        reDisplayBtn.textContent = this.text;
+        reDisplayBtn.classList.add('reDisplayBtn');
+        reDisplayBtn.addEventListener('click', this.showWorks);
+        const resultList = document.querySelector('#search_result_list');
+        if (!resultList) {
+            throw new Error('Cannot get result list');
+        }
+        resultList.before(reDisplayBtn);
+    }
+
+    showWorks() {
+        const hiddenWorks = document.querySelectorAll('.hidden');
+        hiddenWorks.forEach(work => {
+            work.classList.remove('hidden');
+        });
+    }
 }
 
-const observer = new DOMChangeObserver(
-    async () => {
-        await manipulateWorks(false);
-        observer.disconnect();
-    },
-    500
-);
 
-(async () => {
-    console.log('start dlsite_search.ts');
-    await manipulateWorks(true);
-    await addClickListener([
-        document.querySelector(CSSselector.leftFilter) as HTMLElement,
-        document.querySelector(CSSselector.sortBox) as HTMLElement,
-        document.querySelector(CSSselector.searchTop) as HTMLElement
-    ]);
-})();
+// = = = = = BlockBtn = = = = =
+class BlockBtn {
+    private element: HTMLButtonElement;
+    private work: Work;
 
+    constructor(work: Work) {
+        this.element = document.createElement('button');
+        this.element.classList.add('BlockBtn');
+        this.work = work;
+        this.element.addEventListener('click', async () => await this.click(work));
+    }
 
-// = = = = = = = = = = = = = = = = = = = =
-// manipulate works
-// = = = = = = = = = = = = = = = = = = = =
-
-async function manipulateWorks(hide: boolean): Promise<void> {
-    console.log('- - - start manipulate works - - -');
-
-    let showType: 'block' | 'column';
-    let workElments: NodeListOf<HTMLElement>;
-    
-    showType = await determineShowType();
-
-    // waiting for loading
-    while (true) {
-        // get work elements (if found, break)
-        workElments = document.querySelectorAll(CSSselector.works[showType]);
-        if (workElments.length > 0) {
-            break;
+    async add() {
+        if (await isBlockedCircleId(this.work.circleID)) {
+            this.element.textContent = 'Unblock';
+            this.element.classList.add('unblock');
+        } else {
+            this.element.textContent = 'Block!';
+            this.element.classList.add('block');
         }
 
-        // get not found element (if not found, return)
-        const notFoundElement = document.querySelector(CSSselector.notFoundWorks);
-        if (notFoundElement !== null) {
-            console.log('work not found');
+        const makerElement = this.work.element.querySelector('.maker_name');
+        makerElement!.after(this.element);
+    }
+
+    async click(work: Work) {
+        if (this.element.classList.contains('block')) {
+            // Request
+            await insertBlockedCircle(work.circleID, work.circleName);
+            // turn unblock
+            this.element.classList.remove('block');
+            this.element.classList.add('unblock');
+            this.element.textContent = 'Unblock';
+        } else {
+            // Request
+            await trimBlockedCircleList(work.circleID);
+            // turn block
+            this.element.classList.remove('unblock');
+            this.element.classList.add('block');
+            this.element.textContent = 'Block!';
+        }
+    }
+}
+
+
+// = = = = = Main = = = = =
+// URL history
+let oldUrl = location.href;
+
+// Start observer (Run event "urlChange" when URL changed)
+const observer = new MutationObserver(() => {
+    if (oldUrl !== location.href) {
+        window.dispatchEvent(new CustomEvent('urlChange')); // 
+        oldUrl = location.href;
+    }
+});
+setTimeout(() => {
+    observer.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        characterData: true
+    });
+}, 1000);
+
+// Call when URL changed
+function urlChange() {
+    // Get work elements
+    const workElements = Page.getWorkElements();
+
+    // manipulate work elements
+    workElements.forEach(async (workElement) => {
+        const work = new Work(workElement);
+
+        // If flag, pass
+        if (work.checkHasFlag()) {
             return;
         }
-        
-        // sleep 500ms
-        console.log('waiting for loading works...');
-        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Add "BlockBtn"
+        const blockBtn = new BlockBtn(work);
+        await blockBtn.add();
+
+        // Replace title
+        const included = words.map(word => word.after).some(word => work.title.includes(word));
+        if (included) {
+            let newTitle = work.title;
+            words.forEach(word => {
+                newTitle = newTitle.replace(new RegExp(word.after, 'g'), word.before);
+            });
+            work.replaceTitle(newTitle);
+            work.addCautionMark();
+        }
+
+        // If blocked, hide work
+        if (await isBlockedCircleId(work.circleID)) {
+            work.element.classList.add('hidden');
+        }
+
+        // set flag
+        work.addFlag();
+    });
+
+    // Add reDisplay button
+    if (!ReDisplayBtn.exist()) {
+        const reDisplayBtn = new ReDisplayBtn();
+        reDisplayBtn.add();
     }
-
-    // add block button
-    const is_BlockButton = await BlockButton.existBlockButton();
-    if (is_BlockButton) {
-        await BlockButton.deleteButton();
-    }
-    await insertBlockButton(workElments);
-    await BlockButton.updateButton();
-
-    // watch chrome storage
-    chrome.storage.onChanged.addListener(updateBlockedCircles);
-
-    // hide blocked circle works
-    if (hide) {
-        await hideBlockedCircleWorks(workElments);
-    }
-    // add reshow button
-    await addReshowBlockedCirlceWorksButton(workElments);
-
-    console.log('- - - completed manipulate works - - -');
 }
+
+window.addEventListener('urlChange', urlChange);
+
+// First run
+setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('urlChange'));
+}, 500);
+
+

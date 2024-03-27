@@ -1,0 +1,26 @@
+.BlockBtn {
+    font-weight: bold;
+    border-radius: 100vh;
+}
+
+.BlockBtn.block {
+    border-bottom: 5px solid #9f000c;
+}
+
+.BlockBtn.unblock {
+    border-bottom: 5px solid #008000;
+}
+
+.hidden {
+    display: none;
+}
+
+.reDisplayBtn {
+    display: flex;
+    padding: 1em 0 0 1em;
+    font-size: 1.3em;
+    cursor: pointer; 
+    font-weight: bold;
+    color: rgb(56, 56, 172);
+}
+
