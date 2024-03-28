@@ -13,6 +13,7 @@
 
 .hidden {
     display: none;
+    height: 0;
 }
 
 .reDisplayBtn {
