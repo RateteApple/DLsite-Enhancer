@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { getBlockedCircles, trimBlockedCircleList } from "../components/chromestorage.ts";
+import { BlockedCircles } from "../components/chromestorage.ts";
 import { Ref, ref } from 'vue';
 import { onMounted } from 'vue'
 
@@ -46,7 +46,7 @@ export default {
         // update blockedCircles when storage changed
         async function updateBlockedCircles(): Promise<void> {
             console.log("storage changed");
-            const blockedCircles_ = await getBlockedCircles();
+            const blockedCircles_ = await BlockedCircles.get();
             blockedCircles.value = blockedCircles_;
             // update tableTitle
             if (blockedCircles_.length == 0) {
@@ -61,9 +61,9 @@ export default {
             // get circleId 
             const circleId = blockedCircles.value[index]["circleId"];
             // trim blockedCircleList
-            await trimBlockedCircleList(circleId);
+            await BlockedCircles.remove(circleId);
             // update view
-            blockedCircles.value = await getBlockedCircles();
+            blockedCircles.value = await BlockedCircles.get();
         }
 
         // export blockedCircles
@@ -106,7 +106,7 @@ export default {
                 if (file) {
                     const text = await file.text();
                     let importedData = JSON.parse(text);
-                    const blockedCircles_ = await getBlockedCircles();
+                    const blockedCircles_ = await BlockedCircles.get();
                     // delete duplicate
                     importedData = importedData.filter((item: Record<string, string>) => {
                         return blockedCircles_.every((item_: Record<string, string>) => {
@@ -133,7 +133,7 @@ export default {
         // onMounted
         onMounted(async (): Promise<void> => {
             // get blockedCircles
-            const cirles = await getBlockedCircles();
+            const cirles = await BlockedCircles.get();
             blockedCircles.value = cirles;
 
             // set tableTitle

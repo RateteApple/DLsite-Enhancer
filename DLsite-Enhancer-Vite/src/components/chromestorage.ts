@@ -1,85 +1,76 @@
-export {};
-
-// = = = = = = = = = = = = = = = = = = = =
-// clear blocked circle list
-// = = = = = = = = = = = = = = = = = = = =
-
-export async function clearBlockedCircles(): Promise<void> {
-    chrome.storage.local.clear(function () {
-        console.log('Successfully cleared!');
-    });
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// get blocked circle list
-// = = = = = = = = = = = = = = = = = = = =
-
-export async function getBlockedCircles(): Promise<{circleId: string, circleName: string}[]> {
-    return new Promise((resolve) => {
-        chrome.storage.local.get(['blockedCircles'], function (result) {
-            const blockedCircles = result.blockedCircles || [];
-            resolve(blockedCircles);
+export class BlockedCircles {
+    public static async clear(): Promise<void> {
+        chrome.storage.local.set({ blockedCircles: [] }, function () {
+            console.log('Successfully cleared!');
         });
-    });
-}
+    }
 
-// = = = = = = = = = = = = = = = = = = = =
-// set blocked circle list
-// = = = = = = = = = = = = = = = = = = = =
+    public static async set(blockedCircles: { circleId: string, circleName: string }[]): Promise<void> {
+        chrome.storage.local.set({ blockedCircles: blockedCircles }, function () {
+        });
+    }
 
-export async function setBlockedCircles(blockedCircles: {circleId: string, circleName: string}[]): Promise<void> {
-    chrome.storage.local.set({blockedCircles: blockedCircles}, function () {
-    });
-}
+    public static async get(): Promise<{ circleId: string, circleName: string }[]> {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['blockedCircles'], function (result) {
+                const blockedCircles = result.blockedCircles || [];
+                resolve(blockedCircles);
+            });
+        });
+    }
 
-// = = = = = = = = = = = = = = = = = = = =
-// insert to blocked circle list
-// = = = = = = = = = = = = = = = = = = = =
+    public static async add(circleId: string, circleName: string): Promise<void> {
+        const blockedCircles = await this.get();
+        const circleInfo = { circleId: circleId, circleName: circleName };
+        blockedCircles.push(circleInfo);
+        this.set(blockedCircles);
+    }
 
-export async function insertBlockedCircle(circleId: string, circleName: string): Promise<void> {
-    // get blocked circle list
-    const blockedCircles = await getBlockedCircles();
+    public static async remove(circleId: string): Promise<void> {
+        const blockedCircles = await this.get();
+        const newBlockedCircles = blockedCircles.filter(circle => circle.circleId !== circleId);
+        this.set(newBlockedCircles);
+    }
 
-    // insert circle info to blocked circle list
-    const circleInfo = {circleId: circleId, circleName: circleName};
-    blockedCircles.push(circleInfo);
+    public static async checkBlocked(circleId: string): Promise<boolean> {
+        const blockedCircles = await this.get();
+        return blockedCircles.some(circle => circle.circleId === circleId);
+    }
 
-    // save blocked circle list
-    await setBlockedCircles(blockedCircles);
-
-    // show blocked circle list
-    console.log('Successfully blocked!');
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// trim blocked circle list
-// = = = = = = = = = = = = = = = = = = = =
-
-export async function trimBlockedCircleList(circleId: string): Promise<void> {
-    // get blocked circle list
-    const blockedCircles = await getBlockedCircles();
-
-    // remove circle info from blocked circle list
-    const newBlockedCircles = blockedCircles.filter(circle => circle.circleId !== circleId);
-
-    // save blocked circle list
-    await setBlockedCircles(newBlockedCircles);
-
-    console.log('Successfully unblocked!');
-}
-
-// = = = = = = = = = = = = = = = = = = = =
-// is blocked?
-// = = = = = = = = = = = = = = = = = = = =
-
-export async function isBlockedCircleId(circleId: string): Promise<boolean> {
-    // get blocked circle list
-    const blockedCircles = await getBlockedCircles();
-
-    // is blocked?
-    if (blockedCircles.map(circle => circle.circleId).includes(circleId)) {
-        return true;
-    } else {
-        return false;
+    public static addListener(callback: () => void): void {
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes.blockedCircles) {
+                callback();
+            }
+        });
     }
 }
+
+export class Options {
+    public static async clear(): Promise<void> {
+        chrome.storage.local.set({ options: {} }, function () {
+            console.log('Successfully cleared!');
+        });
+    }
+
+    private static async set(options: { [key: string]: any }): Promise<void> {
+        chrome.storage.local.set({ options: options }, function () {
+        });
+    }
+
+    public static async get(): Promise<{ [key: string]: any }> {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['options'], function (result) {
+                const options = result.options || {};
+                resolve(options);
+            });
+        });
+    }
+
+    public static async add(key: string, value: any): Promise<void> {
+        const options = await this.get();
+        options[key] = value;
+        this.set(options);
+    }
+}
+

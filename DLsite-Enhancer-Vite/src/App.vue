@@ -1,5 +1,5 @@
 <template>
-  <h1>index html</h1>
+  <h1>INDEX PAGE</h1>
 </template>
 
 
@@ -14,9 +14,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
 }

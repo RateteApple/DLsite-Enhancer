@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "DLsiteEnhancer",
     "description": "DLsiteを便利にする拡張機能",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "icons": {
         "16": "icons/16.png",
         "48": "icons/48.png",
@@ -26,7 +26,16 @@
                 "*://www.dlsite.com/*/works/type/*"
             ],
             "js": [
-                "./src/contents/dliste_search.ts"
+                "./src/contents/workList.ts"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "*://www.dlsite.com/maniax/*"
+            ],
+            "js": [
+                "./src/contents/searchBox.ts"
             ],
             "run_at": "document_end"
         }
