@@ -11,11 +11,6 @@
     border-bottom: 5px solid #008000;
 }
 
-.hidden {
-    display: none;
-    height: 0;
-}
-
 .reDisplayBtn {
     display: flex;
     padding: 1em 0 0 1em;

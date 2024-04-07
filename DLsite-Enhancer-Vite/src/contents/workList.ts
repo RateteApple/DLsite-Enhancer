@@ -216,11 +216,13 @@ class Work {
     }
 
     public display(): void {
-        this.element.classList.remove('hidden');
+        // set style to display: block
+        (this.element as HTMLElement).style.display = 'block';
     }
 
     public hide(): void {
-        this.element.classList.add('hidden');
+        // set style to display: none
+        (this.element as HTMLElement).style.display = 'none';
     }
 }
 
@@ -247,9 +249,9 @@ class ReDisplayBtn {
     }
 
     public static showWorks() {
-        const hiddenWorks = document.querySelectorAll('.hidden');
-        hiddenWorks.forEach(work => {
-            work.classList.remove('hidden');
+        const works = Work.getWorks();
+        works.forEach(work => {
+            work.display();
         });
     }
 }
